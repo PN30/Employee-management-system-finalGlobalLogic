@@ -14,4 +14,5 @@ public interface EmployeeService {
     List<EmployeeResponse> searchByName(String name);
     List<EmployeeResponse> getByDepartment(Long departmentId);
     List<EmployeeResponse> getActive();
+    EmployeeResponse deactivate(Long id);
 }

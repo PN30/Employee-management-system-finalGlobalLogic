@@ -207,4 +207,32 @@ class EmployeeServiceImplTest {
 
         assertThat(service.getActive()).allMatch(EmployeeResponse::active);
     }
+
+    @Test
+    void deactivate_setsActiveFalseAndReturnsEmployee() {
+        when(employeeRepository.findById(5L)).thenReturn(Optional.of(existing));
+
+        EmployeeResponse response = service.deactivate(5L);
+
+        assertThat(response.id()).isEqualTo(5L);
+        assertThat(response.active()).isFalse();
+        assertThat(existing.isActive()).isFalse();
+    }
+
+    @Test
+    void deactivate_alreadyInactive_staysInactive() {
+        existing.setActive(false);
+        when(employeeRepository.findById(5L)).thenReturn(Optional.of(existing));
+
+        assertThat(service.deactivate(5L).active()).isFalse();
+    }
+
+    @Test
+    void deactivate_notFound_throws() {
+        when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deactivate(99L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("99");
+    }
 }
