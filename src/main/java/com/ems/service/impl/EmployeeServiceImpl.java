@@ -95,7 +95,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public EmployeeResponse deactivate(Long id) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        Employee employee = find(id);
+        employee.setActive(false);
+        log.info("Deactivated employee id={}", id);
+        return EntityMapper.toResponse(employee);
     }
 
     private Employee find(Long id) {
