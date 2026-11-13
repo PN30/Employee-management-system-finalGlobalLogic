@@ -209,6 +209,40 @@ class EmployeeServiceImplTest {
     }
 
     @Test
+    void getHiredAfter_returnsMatchingEmployeesInHireDateOrder() {
+        LocalDate date = LocalDate.of(2024, 1, 15);
+        Employee hiredEarlier = TestData.employee("Mina", "Shah", "mina@example.com", department, true);
+        hiredEarlier.setHireDate(LocalDate.of(2024, 2, 1));
+        Employee hiredLater = TestData.employee("Noah", "Lee", "noah@example.com", department, true);
+        hiredLater.setHireDate(LocalDate.of(2024, 3, 1));
+        when(employeeRepository.findByHireDateAfterOrderByHireDateAsc(date))
+                .thenReturn(List.of(hiredEarlier, hiredLater));
+
+        List<EmployeeResponse> responses = service.getHiredAfter(date);
+
+        assertThat(responses).extracting(EmployeeResponse::email)
+                .containsExactly("mina@example.com", "noah@example.com");
+        assertThat(responses).extracting(EmployeeResponse::hireDate)
+                .containsExactly(LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1));
+        verify(employeeRepository).findByHireDateAfterOrderByHireDateAsc(date);
+    }
+
+    @Test
+    void getHiredAfter_returnsEmptyListWhenNoEmployeesMatch() {
+        LocalDate date = LocalDate.of(2024, 1, 15);
+        when(employeeRepository.findByHireDateAfterOrderByHireDateAsc(date)).thenReturn(List.of());
+
+        assertThat(service.getHiredAfter(date)).isEmpty();
+    }
+
+    @Test
+    void getHiredAfter_nullDateThrows() {
+        assertThatThrownBy(() -> service.getHiredAfter(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("date must not be null");
+    }
+
+    @Test
     void deactivate_setsActiveFalseAndReturnsEmployee() {
         when(employeeRepository.findById(5L)).thenReturn(Optional.of(existing));
 
@@ -233,7 +267,7 @@ class EmployeeServiceImplTest {
 
         assertThatThrownBy(() -> service.deactivate(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("99");
+                .hasMessage("Employee not found with id 99");
     }
 
     @Test

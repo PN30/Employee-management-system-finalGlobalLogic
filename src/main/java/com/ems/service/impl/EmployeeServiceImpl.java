@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -103,6 +104,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public long countByDepartment(Long departmentId) {
         requireDepartmentExists(departmentId);
         return employeeRepository.countByDepartmentId(departmentId);
+    }
+
+    @Override
+    public List<EmployeeResponse> getHiredAfter(LocalDate date) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     private Employee find(Long id) {
