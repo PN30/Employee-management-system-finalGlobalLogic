@@ -103,7 +103,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public long countByDepartment(Long departmentId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (!departmentRepository.existsById(departmentId)) {
+            throw new ResourceNotFoundException("Department not found with id " + departmentId);
+        }
+        return employeeRepository.countByDepartmentId(departmentId);
     }
 
     private Employee find(Long id) {
