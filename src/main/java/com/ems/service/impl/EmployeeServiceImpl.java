@@ -81,9 +81,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> getByDepartment(Long departmentId) {
-        if (!departmentRepository.existsById(departmentId)) {
-            throw new ResourceNotFoundException("Department not found with id " + departmentId);
-        }
+        requireDepartmentExists(departmentId);
         return toResponses(employeeRepository.findByDepartmentId(departmentId));
     }
 
@@ -103,15 +101,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public long countByDepartment(Long departmentId) {
-        if (!departmentRepository.existsById(departmentId)) {
-            throw new ResourceNotFoundException("Department not found with id " + departmentId);
-        }
+        requireDepartmentExists(departmentId);
         return employeeRepository.countByDepartmentId(departmentId);
     }
 
     private Employee find(Long id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + id));
+    }
+
+    private void requireDepartmentExists(Long departmentId) {
+        if (!departmentRepository.existsById(departmentId)) {
+            throw new ResourceNotFoundException("Department not found with id " + departmentId);
+        }
     }
 
     private void apply(Employee employee, EmployeeRequest request, String email) {
