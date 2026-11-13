@@ -120,6 +120,11 @@ public class ProjectServiceImpl implements ProjectService {
         return projectRepository.findByEmployees_Id(employeeId).stream().map(EntityMapper::toResponse).toList();
     }
 
+    @Override
+    public List<ProjectResponse> getOngoingProjects() {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     private Project findProject(Long id) {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + id));
