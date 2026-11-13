@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ProjectResponse> getAll() {
-        return projectRepository.findAll().stream().map(EntityMapper::toResponse).toList();
+        return toResponses(projectRepository.findAll());
     }
 
     @Override
@@ -117,7 +118,15 @@ public class ProjectServiceImpl implements ProjectService {
         if (!employeeRepository.existsById(employeeId)) {
             throw new ResourceNotFoundException("Employee not found with id " + employeeId);
         }
-        return projectRepository.findByEmployees_Id(employeeId).stream().map(EntityMapper::toResponse).toList();
+        return toResponses(projectRepository.findByEmployees_Id(employeeId));
+    }
+
+    @Override
+    public List<ProjectResponse> getOngoingProjects() {
+        LocalDate today = LocalDate.now();
+        return toResponses(projectRepository.findAll().stream()
+                .filter(p -> isOngoing(p, today))
+                .toList());
     }
 
     private Project findProject(Long id) {
@@ -128,6 +137,14 @@ public class ProjectServiceImpl implements ProjectService {
     private Employee findEmployee(Long id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + id));
+    }
+
+    private static boolean isOngoing(Project project, LocalDate today) {
+        return project.getEndDate() == null || !project.getEndDate().isBefore(today);
+    }
+
+    private List<ProjectResponse> toResponses(List<Project> projects) {
+        return projects.stream().map(EntityMapper::toResponse).toList();
     }
 
     private void apply(Project project, ProjectRequest request, String name) {

@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -81,9 +82,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> getByDepartment(Long departmentId) {
-        if (!departmentRepository.existsById(departmentId)) {
-            throw new ResourceNotFoundException("Department not found with id " + departmentId);
-        }
+        requireDepartmentExists(departmentId);
         return toResponses(employeeRepository.findByDepartmentId(departmentId));
     }
 
@@ -92,9 +91,38 @@ public class EmployeeServiceImpl implements EmployeeService {
         return toResponses(employeeRepository.findByActiveTrue());
     }
 
+    @Override
+    @Transactional
+    public EmployeeResponse deactivate(Long id) {
+        Employee employee = find(id);
+        employee.setActive(false);
+        log.info("Deactivated employee id={}", id);
+        return EntityMapper.toResponse(employee);
+    }
+
+    @Override
+    public long countByDepartment(Long departmentId) {
+        requireDepartmentExists(departmentId);
+        return employeeRepository.countByDepartmentId(departmentId);
+    }
+
+    @Override
+    public List<EmployeeResponse> getHiredAfter(LocalDate date) {
+        if (date == null) {
+            throw new IllegalArgumentException("date must not be null");
+        }
+        return toResponses(employeeRepository.findByHireDateAfterOrderByHireDateAsc(date));
+    }
+
     private Employee find(Long id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + id));
+    }
+
+    private void requireDepartmentExists(Long departmentId) {
+        if (!departmentRepository.existsById(departmentId)) {
+            throw new ResourceNotFoundException("Department not found with id " + departmentId);
+        }
     }
 
     private void apply(Employee employee, EmployeeRequest request, String email) {
