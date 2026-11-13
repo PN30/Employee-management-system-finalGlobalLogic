@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workforce · Employee Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f6fb; --surface:#ffffff; --surface-2:#f8f9fd; --text:#0f172a; --muted:#64748b; --line:#e8ebf4;
+    --brand:#6366f1; --brand-2:#8b5cf6; --brand-soft:rgba(99,102,241,.1);
+    --ok:#10b981; --ok-soft:rgba(16,185,129,.12); --off:#94a3b8; --off-soft:rgba(148,163,184,.16);
+    --danger:#ef4444; --danger-soft:rgba(239,68,68,.1);
+    --shadow:0 1px 2px rgba(15,23,42,.04),0 10px 30px rgba(15,23,42,.06); --r:18px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0b1020; --surface:#131a2e; --surface-2:#18203a; --text:#e8ebf7; --muted:#8c96b4; --line:#232c48;
+      --brand-soft:rgba(129,140,248,.16); --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.35); }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);
+       -webkit-font-smoothing:antialiased;font-size:14.5px}
+  button,input,select{font:inherit;color:inherit}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+  /* Sidebar */
+  aside{position:sticky;top:0;height:100vh;padding:26px 18px;display:flex;flex-direction:column;gap:28px;
+        background:var(--surface);border-right:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;padding:0 8px}
+  .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:700;
+        background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 8px 20px rgba(99,102,241,.35)}
+  .brand b{font-size:16px;letter-spacing:-.01em}
+  .brand small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
+  nav{display:flex;flex-direction:column;gap:4px}
+  nav button,nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border:0;border-radius:12px;background:none;
+        color:var(--muted);cursor:pointer;font-weight:500;text-decoration:none;text-align:left;transition:.15s}
+  nav button:hover,nav a:hover{background:var(--surface-2);color:var(--text)}
+  nav button.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+  nav svg{width:19px;height:19px;flex:none}
+  .spacer{flex:1}
+
+  /* Main */
+  main{padding:34px clamp(18px,4vw,48px) 60px;max-width:1280px;width:100%}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+  h1{margin:0;font-size:28px;letter-spacing:-.02em}
+  .head p{margin:6px 0 0;color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;padding:11px 18px;font-weight:600;
+       cursor:pointer;transition:.15s}
+  .btn.primary{color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 8px 20px rgba(99,102,241,.3)}
+  .btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(99,102,241,.38)}
+  .btn.ghost{background:var(--surface-2);border:1px solid var(--line)}
+  .btn.ghost:hover{background:var(--line)}
+  .btn.danger{background:var(--danger);color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:22px}
+  .stat{background:var(--surface);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .stat span{color:var(--muted);font-size:13px}
+  .stat b{display:block;font-size:30px;margin-top:6px;letter-spacing:-.02em}
+
+  .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line)}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px}
+  .field{position:relative;flex:1;min-width:200px}
+  .field svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;color:var(--muted)}
+  input,select,textarea{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);
+        outline:none;transition:.15s}
+  .field input{padding-left:40px}
+  input:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
+  .toolbar select{width:auto;min-width:170px}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);
+        background:var(--surface-2);cursor:pointer;user-select:none;font-weight:500}
+  .chip input{width:auto;accent-color:var(--brand)}
+
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+     padding:12px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface-2)}
+  td{padding:14px 18px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  tbody tr{transition:.12s}
+  tbody tr:hover{background:var(--surface-2)}
+  .who{display:flex;align-items:center;gap:12px}
+  .who b{display:block;font-weight:600}
+  .who small,.muted{color:var(--muted)}
+  .who small{font-size:12.5px}
+  .avatar{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;
+          background:hsl(var(--h) 80% 60% / .18);color:hsl(var(--h) 65% 45%)}
+  .pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:600}
+  .pill.dept{background:var(--brand-soft);color:var(--brand)}
+  .pill.ok{background:var(--ok-soft);color:var(--ok)}
+  .pill.off{background:var(--off-soft);color:var(--off)}
+  .actions{display:flex;gap:6px;justify-content:flex-end}
+  .icon{width:34px;height:34px;border-radius:10px;border:0;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s}
+  .icon:hover{background:var(--line);color:var(--text)}
+  .icon.del:hover{background:var(--danger-soft);color:var(--danger)}
+  .icon svg{width:17px;height:17px}
+  .empty{padding:56px 20px;text-align:center;color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;
+        display:flex;flex-direction:column;gap:14px;transition:.18s}
+  .tile:hover{transform:translateY(-3px)}
+  .tile h3{margin:0;font-size:17px;letter-spacing:-.01em}
+  .tile p{margin:0;color:var(--muted);line-height:1.5;min-height:42px}
+  .tile .foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+  .tile .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .dates{font-size:12.5px;color:var(--muted)}
+
+  /* Dialog */
+  dialog{border:0;border-radius:22px;padding:0;width:min(480px,92vw);background:var(--surface);color:var(--text);
+         box-shadow:0 30px 80px rgba(0,0,0,.35)}
+  dialog::backdrop{background:rgba(10,14,30,.55);backdrop-filter:blur(4px)}
+  dialog .body{padding:26px}
+  dialog h3{margin:0 0 18px;font-size:20px;letter-spacing:-.01em}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fields label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--muted)}
+  .fields .full{grid-column:1/-1}
+  .dlg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+  .members{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto;margin:6px 0 16px}
+  .member{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;background:var(--surface-2)}
+  .member div{flex:1}.member b{display:block}.member small{color:var(--muted)}
+  .addrow{display:flex;gap:10px}
+
+  #toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,30px);opacity:0;pointer-events:none;transition:.25s;
+         padding:13px 20px;border-radius:14px;font-weight:500;color:#fff;background:#0f172a;box-shadow:0 14px 40px rgba(0,0,0,.3);z-index:99}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #toast.err{background:var(--danger)}
+
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr}
+    aside{position:static;height:auto;flex-direction:row;align-items:center;padding:12px 16px;gap:10px;overflow-x:auto}
+    .brand small,.spacer,nav a{display:none}
+    nav{flex-direction:row}
+    .card{overflow-x:auto}
+    .fields{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">W</div><div><b>Workforce</b><small>Employee management</small></div></div>
+    <nav id="nav">
+      <button data-tab="employees" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.4c2.2.6 3.5 2.6 3.5 5.6"/></svg>Employees</button>
+      <button data-tab="departments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>Departments</button>
+      <button data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.5h7.5A2.5 2.5 0 0121 10v7.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/></svg>Projects</button>
+    </nav>
+    <div class="spacer"></div>
+    <nav><a href="/swagger-ui.html" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>API docs</a></nav>
+  </aside>
+  <main id="main"></main>
+</div>
+<dialog id="dlg"></dialog>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const main = $('#main'), dlg = $('#dlg');
+const state = { tab:'employees', all:[], employees:[], departments:[], projects:[], q:'', dept:'', activeOnly:false };
+
+const ICON = {
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16z"/></svg>',
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>',
+  plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+};
+
+// ---------- helpers ----------
+async function api(path, method = 'GET', body) {
+  const res = await fetch('/api' + path, { method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined });
+  if (res.status === 204) return null;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const fe = data && data.fieldErrors && Object.keys(data.fieldErrors).length
+      ? Object.entries(data.fieldErrors).map(([k, v]) => `${k}: ${v}`).join(' · ') : null;
+    throw new Error(fe || (data && (data.message || data.detail)) || 'Something went wrong');
+  }
+  return data;
+}
+let toastTimer;
+function toast(msg, err = false) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = '', 3200);
+}
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '—';
+const money = n => n == null ? '—' : new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', maximumFractionDigits:0}).format(n);
+const avatar = e => `<span class="avatar" style="--h:${(e.id * 57) % 360}">${esc((e.firstName[0] || '') + (e.lastName[0] || ''))}</span>`;
+const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+function modal(title, fields, onSubmit, label = 'Save', danger = false) {
+  dlg.innerHTML = `<form class="body"><h3>${title}</h3><div class="fields">${fields}</div>
+    <div class="dlg-actions"><button type="button" class="btn ghost" data-close>Cancel</button>
+    <button class="btn ${danger ? 'danger' : 'primary'}">${label}</button></div></form>`;
+  const f = dlg.querySelector('form');
+  f.querySelector('[data-close]').onclick = () => dlg.close();
+  f.onsubmit = async ev => {
+    ev.preventDefault();
+    try { await onSubmit(Object.fromEntries(new FormData(f))); dlg.close(); }
+    catch (err) { toast(err.message, true); }
+  };
+  if (!dlg.open) dlg.showModal();
+}
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+// ---------- data ----------
+async function loadEmployees() {
+  let path = '/employees';
+  if (state.q.trim()) path = '/employees/search?name=' + encodeURIComponent(state.q.trim());
+  else if (state.dept) path = '/employees/department/' + state.dept;
+  else if (state.activeOnly) path = '/employees/active';
+  let list = await api(path);
+  if (state.dept) list = list.filter(e => String(e.departmentId) === state.dept);
+  if (state.activeOnly) list = list.filter(e => e.active);
+  state.employees = list;
+}
+async function refresh() {
+  try {
+    [state.departments, state.projects, state.all] = await Promise.all([api('/departments'), api('/projects'), api('/employees')]);
+    await loadEmployees();
+    draw();
+  } catch (err) { toast(err.message, true); }
+}
+
+// ---------- views ----------
+function header(title, sub, action) {
+  return `<div class="head"><div><h1>${title}</h1><p>${sub}</p></div>
+    <button class="btn primary" data-act="${action}">${ICON.plus} Add ${title.slice(0, -1).toLowerCase().replace('ie', 'y')}</button></div>`;
+}
+function draw() {
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === state.tab));
+  if (state.tab === 'employees') drawEmployees();
+  else if (state.tab === 'departments') drawDepartments();
+  else drawProjects();
+}
+
+function drawEmployees() {
+  const active = state.all.filter(e => e.active).length;
+  main.innerHTML = header('Employees', 'Everyone in your organisation, at a glance.', 'add-emp') + `
+    <div class="stats">
+      <div class="stat"><span>Total employees</span><b>${state.all.length}</b></div>
+      <div class="stat"><span>Active</span><b>${active}</b></div>
+      <div class="stat"><span>Departments</span><b>${state.departments.length}</b></div>
+      <div class="stat"><span>Projects</span><b>${state.projects.length}</b></div>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <div class="field">${ICON.search}<input id="q" placeholder="Search by name…" value="${esc(state.q)}"></div>
+        <select id="deptFilter"><option value="">All departments</option>
+          ${state.departments.map(d => `<option value="${d.id}" ${String(d.id) === state.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select>
+        <label class="chip"><input type="checkbox" id="activeOnly" ${state.activeOnly ? 'checked' : ''}> Active only</label>
+      </div>
+      <div id="rows"></div>
+    </div>`;
+  $('#q').oninput = debounce(async e => { state.q = e.target.value; await loadEmployees(); drawRows(); });
+  $('#deptFilter').onchange = async e => { state.dept = e.target.value; await loadEmployees(); drawRows(); };
+  $('#activeOnly').onchange = async e => { state.activeOnly = e.target.checked; await loadEmployees(); drawRows(); };
+  drawRows();
+}
+function drawRows() {
+  const rows = state.employees;
+  $('#rows').innerHTML = !rows.length ? '<div class="empty">No employees match your filters.</div>' : `
+    <table><thead><tr><th>Employee</th><th>Role</th><th>Department</th><th>Hired</th><th>Salary</th><th>Status</th><th></th></tr></thead><tbody>
+    ${rows.map(e => `<tr>
+      <td><div class="who">${avatar(e)}<div><b>${esc(e.fullName)}</b><small>${esc(e.email)}</small></div></div></td>
+      <td>${esc(e.jobTitle || '—')}</td>
+      <td><span class="pill dept">${esc(e.departmentName)}</span></td>
+      <td class="muted">${fmtDate(e.hireDate)}</td>
+      <td>${money(e.salary)}</td>
+      <td><span class="pill ${e.active ? 'ok' : 'off'}">${e.active ? 'Active' : 'Inactive'}</span></td>
+      <td><div class="actions"><button class="icon" title="Edit" data-act="edit-emp" data-id="${e.id}">${ICON.edit}</button>
+        <button class="icon del" title="Delete" data-act="del-emp" data-id="${e.id}">${ICON.del}</button></div></td></tr>`).join('')}
+    </tbody></table>`;
+}
+
+function drawDepartments() {
+  main.innerHTML = header('Departments', 'Teams that make up the organisation.', 'add-dep') + (!state.departments.length
+    ? '<div class="card empty">No departments yet.</div>'
+    : `<div class="grid">${state.departments.map(d => `<div class="tile">
+        <div class="top"><h3>${esc(d.name)}</h3><div class="actions">
+          <button class="icon" title="Edit" data-act="edit-dep" data-id="${d.id}">${ICON.edit}</button>
+          <button class="icon del" title="Delete" data-act="del-dep" data-id="${d.id}">${ICON.del}</button></div></div>
+        <p>${esc(d.description || 'No description')}</p>
+        <div class="foot"><span class="pill dept">${d.employeeCount} ${d.employeeCount === 1 ? 'person' : 'people'}</span></div></div>`).join('')}</div>`);
+}
+
+function drawProjects() {
+  main.innerHTML = header('Projects', 'Track initiatives and who is working on them.', 'add-prj') + (!state.projects.length
+    ? '<div class="card empty">No projects yet.</div>'
+    : `<div class="grid">${state.projects.map(p => `<div class="tile">
+        <div class="top"><h3>${esc(p.name)}</h3><div class="actions">
+          <button class="icon" title="Edit" data-act="edit-prj" data-id="${p.id}">${ICON.edit}</button>
+          <button class="icon del" title="Delete" data-act="del-prj" data-id="${p.id}">${ICON.del}</button></div></div>
+        <p>${esc(p.description || 'No description')}</p>
+        <div class="dates">${fmtDate(p.startDate)} → ${p.endDate ? fmtDate(p.endDate) : 'ongoing'}</div>
+        <div class="foot"><span class="pill dept">${p.employeeCount} on team</span>
+          <button class="btn ghost" data-act="team" data-id="${p.id}">Manage team</button></div></div>`).join('')}</div>`);
+}
+
+// ---------- forms ----------
+function empForm(e = {}) {
+  if (!state.departments.length) return toast('Create a department first', true);
+  modal(e.id ? 'Edit employee' : 'Add employee', `
+    <label>First name<input name="firstName" required value="${esc(e.firstName)}"></label>
+    <label>Last name<input name="lastName" required value="${esc(e.lastName)}"></label>
+    <label class="full">Email<input type="email" name="email" required value="${esc(e.email)}"></label>
+    <label>Job title<input name="jobTitle" value="${esc(e.jobTitle)}"></label>
+    <label>Salary (₹)<input type="number" min="0" name="salary" value="${e.salary ?? ''}"></label>
+    <label>Hire date<input type="date" name="hireDate" required value="${e.hireDate || ''}"></label>
+    <label>Department<select name="departmentId">${state.departments.map(d =>
+      `<option value="${d.id}" ${d.id === e.departmentId ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></label>
+    <label class="full">Status<select name="active"><option value="true" ${e.active !== false ? 'selected' : ''}>Active</option>
+      <option value="false" ${e.active === false ? 'selected' : ''}>Inactive</option></select></label>`,
+    async d => {
+      const payload = { ...d, salary: d.salary === '' ? null : Number(d.salary), departmentId: Number(d.departmentId), active: d.active === 'true' };
+      await api(e.id ? '/employees/' + e.id : '/employees', e.id ? 'PUT' : 'POST', payload);
+      toast(e.id ? 'Employee updated' : 'Employee added'); await refresh();
+    });
+}
+function depForm(d = {}) {
+  modal(d.id ? 'Edit department' : 'Add department', `
+    <label class="full">Name<input name="name" required value="${esc(d.name)}"></label>
+    <label class="full">Description<input name="description" value="${esc(d.description)}"></label>`,
+    async v => { await api(d.id ? '/departments/' + d.id : '/departments', d.id ? 'PUT' : 'POST', v);
+      toast(d.id ? 'Department updated' : 'Department added'); await refresh(); });
+}
+function prjForm(p = {}) {
+  modal(p.id ? 'Edit project' : 'Add project', `
+    <label class="full">Name<input name="name" required value="${esc(p.name)}"></label>
+    <label class="full">Description<input name="description" value="${esc(p.description)}"></label>
+    <label>Start date<input type="date" name="startDate" value="${p.startDate || ''}"></label>
+    <label>End date<input type="date" name="endDate" value="${p.endDate || ''}"></label>`,
+    async v => { const payload = { ...v, startDate: v.startDate || null, endDate: v.endDate || null };
+      await api(p.id ? '/projects/' + p.id : '/projects', p.id ? 'PUT' : 'POST', payload);
+      toast(p.id ? 'Project updated' : 'Project added'); await refresh(); });
+}
+function confirmDelete(what, path) {
+  modal('Delete ' + what + '?', '<p class="full muted" style="margin:0">This action cannot be undone.</p>',
+    async () => { await api(path, 'DELETE'); toast('Deleted'); await refresh(); }, 'Delete', true);
+}
+
+async function openTeam(id) {
+  try {
+    const [p, members] = await Promise.all([api('/projects/' + id), api(`/projects/${id}/employees`)]);
+    const taken = new Set(members.map(m => m.id));
+    const free = state.all.filter(e => e.active && !taken.has(e.id));
+    dlg.innerHTML = `<div class="body"><h3>${esc(p.name)} · Team</h3>
+      <div class="members">${members.map(m => `<div class="member">${avatar(m)}<div><b>${esc(m.fullName)}</b><small>${esc(m.jobTitle || '')}</small></div>
+        <button class="icon del" title="Remove" data-rm="${m.id}">${ICON.del}</button></div>`).join('') || '<p class="muted">No one is assigned yet.</p>'}</div>
+      ${free.length ? `<div class="addrow"><select id="addEmp">${free.map(e => `<option value="${e.id}">${esc(e.fullName)}</option>`).join('')}</select>
+        <button class="btn primary" id="addBtn">Assign</button></div>` : ''}
+      <div class="dlg-actions"><button class="btn ghost" id="closeBtn">Done</button></div></div>`;
+    $('#closeBtn').onclick = () => dlg.close();
+    const again = async () => { await refresh(); openTeam(id); };
+    if ($('#addBtn')) $('#addBtn').onclick = async () => {
+      try { await api(`/projects/${id}/employees/${$('#addEmp').value}`, 'POST'); await again(); } catch (e) { toast(e.message, true); } };
+    dlg.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
+      try { await api(`/projects/${id}/employees/${b.dataset.rm}`, 'DELETE'); await again(); } catch (e) { toast(e.message, true); } });
+    if (!dlg.open) dlg.showModal();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ---------- events ----------
+$('#nav').onclick = e => { const b = e.target.closest('button'); if (b) { state.tab = b.dataset.tab; draw(); } };
+main.onclick = e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const id = Number(b.dataset.id);
+  const find = (list) => list.find(x => x.id === id);
+  ({
+    'add-emp': () => empForm(), 'edit-emp': () => empForm(find(state.all)), 'del-emp': () => confirmDelete('employee', '/employees/' + id),
+    'add-dep': () => depForm(), 'edit-dep': () => depForm(find(state.departments)), 'del-dep': () => confirmDelete('department', '/departments/' + id),
+    'add-prj': () => prjForm(), 'edit-prj': () => prjForm(find(state.projects)), 'del-prj': () => confirmDelete('project', '/projects/' + id),
+    'team': () => openTeam(id)
+  })[b.dataset.act]();
+};
+
+refresh();
+</script>
+</body>
+</html>
