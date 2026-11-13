@@ -101,6 +101,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EntityMapper.toResponse(employee);
     }
 
+    @Override
+    public long countByDepartment(Long departmentId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     private Employee find(Long id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + id));

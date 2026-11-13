@@ -15,4 +15,5 @@ public interface EmployeeService {
     List<EmployeeResponse> getByDepartment(Long departmentId);
     List<EmployeeResponse> getActive();
     EmployeeResponse deactivate(Long id);
+    long countByDepartment(Long departmentId);
 }

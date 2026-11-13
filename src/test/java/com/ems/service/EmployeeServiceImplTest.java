@@ -235,4 +235,30 @@ class EmployeeServiceImplTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("99");
     }
+
+    @Test
+    void countByDepartment_returnsCount() {
+        when(departmentRepository.existsById(1L)).thenReturn(true);
+        when(employeeRepository.countByDepartmentId(1L)).thenReturn(4L);
+
+        assertThat(service.countByDepartment(1L)).isEqualTo(4L);
+    }
+
+    @Test
+    void countByDepartment_emptyDepartment_returnsZero() {
+        when(departmentRepository.existsById(1L)).thenReturn(true);
+        when(employeeRepository.countByDepartmentId(1L)).thenReturn(0L);
+
+        assertThat(service.countByDepartment(1L)).isZero();
+    }
+
+    @Test
+    void countByDepartment_unknownDepartment_throws() {
+        when(departmentRepository.existsById(3L)).thenReturn(false);
+
+        assertThatThrownBy(() -> service.countByDepartment(3L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Department");
+        verify(employeeRepository, never()).countByDepartmentId(any());
+    }
 }
