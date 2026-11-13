@@ -79,7 +79,10 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public DepartmentResponse getByName(String name) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        String trimmed = name.trim();
+        return departmentRepository.findByNameIgnoreCase(trimmed)
+                .map(EntityMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found with name '" + trimmed + "'"));
     }
 
     private Department find(Long id) {
