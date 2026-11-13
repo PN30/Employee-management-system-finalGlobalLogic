@@ -108,7 +108,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> getHiredAfter(LocalDate date) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (date == null) {
+            throw new IllegalArgumentException("date must not be null");
+        }
+        return toResponses(employeeRepository.findByHireDateAfterOrderByHireDateAsc(date));
     }
 
     private Employee find(Long id) {
