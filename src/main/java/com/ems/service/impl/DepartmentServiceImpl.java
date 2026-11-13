@@ -77,6 +77,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         return departmentRepository.findAll().stream().map(EntityMapper::toResponse).toList();
     }
 
+    @Override
+    public DepartmentResponse getByName(String name) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     private Department find(Long id) {
         return departmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found with id " + id));

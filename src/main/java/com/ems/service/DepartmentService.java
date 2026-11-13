@@ -11,4 +11,5 @@ public interface DepartmentService {
     void delete(Long id);
     DepartmentResponse getById(Long id);
     List<DepartmentResponse> getAll();
+    DepartmentResponse getByName(String name);
 }
