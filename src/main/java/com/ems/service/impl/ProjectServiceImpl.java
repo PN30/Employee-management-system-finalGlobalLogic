@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +123,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ProjectResponse> getOngoingProjects() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        LocalDate today = LocalDate.now();
+        return projectRepository.findAll().stream()
+                .filter(p -> p.getEndDate() == null || !p.getEndDate().isBefore(today))
+                .map(EntityMapper::toResponse)
+                .toList();
     }
 
     private Project findProject(Long id) {
