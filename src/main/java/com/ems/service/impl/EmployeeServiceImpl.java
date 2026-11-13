@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Provides employee operations backed by the employee and department repositories.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +30,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
 
+    /**
+     * Creates an employee from the supplied request.
+     *
+     * @param request employee details
+     * @return the created employee
+     * @throws DuplicateResourceException if the email is already in use
+     */
     @Override
     @Transactional
     public EmployeeResponse create(EmployeeRequest request) {
@@ -41,6 +51,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EntityMapper.toResponse(saved);
     }
 
+    /**
+     * Updates an existing employee.
+     *
+     * @param id employee identifier
+     * @param request updated employee details
+     * @return the updated employee
+     * @throws ResourceNotFoundException if the employee or requested department does not exist
+     * @throws DuplicateResourceException if the email is already in use by another employee
+     */
     @Override
     @Transactional
     public EmployeeResponse update(Long id, EmployeeRequest request) {
@@ -54,6 +73,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EntityMapper.toResponse(employee);
     }
 
+    /**
+     * Deletes an employee.
+     *
+     * @param id employee identifier
+     * @throws ResourceNotFoundException if the employee does not exist
+     */
     @Override
     @Transactional
     public void delete(Long id) {
@@ -62,16 +87,34 @@ public class EmployeeServiceImpl implements EmployeeService {
         log.info("Deleted employee id={}", id);
     }
 
+    /**
+     * Retrieves an employee by identifier.
+     *
+     * @param id employee identifier
+     * @return the requested employee
+     * @throws ResourceNotFoundException if the employee does not exist
+     */
     @Override
     public EmployeeResponse getById(Long id) {
         return EntityMapper.toResponse(find(id));
     }
 
+    /**
+     * Retrieves all employees.
+     *
+     * @return all employees
+     */
     @Override
     public List<EmployeeResponse> getAll() {
         return toResponses(employeeRepository.findAll());
     }
 
+    /**
+     * Searches employees by name, or returns all employees for a blank query.
+     *
+     * @param name name to search for
+     * @return employees matching the query
+     */
     @Override
     public List<EmployeeResponse> searchByName(String name) {
         if (name == null || name.isBlank()) {
@@ -80,17 +123,36 @@ public class EmployeeServiceImpl implements EmployeeService {
         return toResponses(employeeRepository.searchByName(name.trim()));
     }
 
+    /**
+     * Retrieves employees in a department.
+     *
+     * @param departmentId department identifier
+     * @return employees in the department
+     * @throws ResourceNotFoundException if the department does not exist
+     */
     @Override
     public List<EmployeeResponse> getByDepartment(Long departmentId) {
         requireDepartmentExists(departmentId);
         return toResponses(employeeRepository.findByDepartmentId(departmentId));
     }
 
+    /**
+     * Retrieves active employees.
+     *
+     * @return all active employees
+     */
     @Override
     public List<EmployeeResponse> getActive() {
         return toResponses(employeeRepository.findByActiveTrue());
     }
 
+    /**
+     * Marks an employee as inactive.
+     *
+     * @param id employee identifier
+     * @return the deactivated employee
+     * @throws ResourceNotFoundException if the employee does not exist
+     */
     @Override
     @Transactional
     public EmployeeResponse deactivate(Long id) {
@@ -100,12 +162,26 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EntityMapper.toResponse(employee);
     }
 
+    /**
+     * Counts employees in a department.
+     *
+     * @param departmentId department identifier
+     * @return the number of employees in the department
+     * @throws ResourceNotFoundException if the department does not exist
+     */
     @Override
     public long countByDepartment(Long departmentId) {
         requireDepartmentExists(departmentId);
         return employeeRepository.countByDepartmentId(departmentId);
     }
 
+    /**
+     * Retrieves employees hired after a date, ordered by hire date ascending.
+     *
+     * @param date exclusive hire-date lower bound
+     * @return employees hired after the date
+     * @throws IllegalArgumentException if the date is null
+     */
     @Override
     public List<EmployeeResponse> getHiredAfter(LocalDate date) {
         if (date == null) {
