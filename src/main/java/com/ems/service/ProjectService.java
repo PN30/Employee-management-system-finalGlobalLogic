@@ -16,4 +16,5 @@ public interface ProjectService {
     ProjectResponse removeEmployee(Long projectId, Long employeeId);
     List<EmployeeResponse> getEmployeesByProject(Long projectId);
     List<ProjectResponse> getProjectsByEmployee(Long employeeId);
+    List<ProjectResponse> getOngoingProjects();
 }

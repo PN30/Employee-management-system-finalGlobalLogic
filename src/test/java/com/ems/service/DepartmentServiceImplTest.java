@@ -138,4 +138,23 @@ class DepartmentServiceImplTest {
 
         assertThat(service.getById(1L).name()).isEqualTo("Engineering");
     }
+
+    @Test
+    void getByName_isCaseInsensitiveAndTrimmed() {
+        when(departmentRepository.findByNameIgnoreCase("engineering")).thenReturn(Optional.of(existing));
+
+        DepartmentResponse response = service.getByName("  engineering ");
+
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.name()).isEqualTo("Engineering");
+    }
+
+    @Test
+    void getByName_notFound_throws() {
+        when(departmentRepository.findByNameIgnoreCase("Marketing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getByName("Marketing"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Marketing");
+    }
 }

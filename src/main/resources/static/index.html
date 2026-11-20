@@ -1,381 +1,570 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Workforce · Employee Management</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#f5f6fb; --surface:#ffffff; --surface-2:#f8f9fd; --text:#0f172a; --muted:#64748b; --line:#e8ebf4;
-    --brand:#6366f1; --brand-2:#8b5cf6; --brand-soft:rgba(99,102,241,.1);
-    --ok:#10b981; --ok-soft:rgba(16,185,129,.12); --off:#94a3b8; --off-soft:rgba(148,163,184,.16);
-    --danger:#ef4444; --danger-soft:rgba(239,68,68,.1);
-    --shadow:0 1px 2px rgba(15,23,42,.04),0 10px 30px rgba(15,23,42,.06); --r:18px;
-  }
-  @media (prefers-color-scheme:dark){
-    :root{ --bg:#0b1020; --surface:#131a2e; --surface-2:#18203a; --text:#e8ebf7; --muted:#8c96b4; --line:#232c48;
-      --brand-soft:rgba(129,140,248,.16); --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.35); }
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0}
-  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);
-       -webkit-font-smoothing:antialiased;font-size:14.5px}
-  button,input,select{font:inherit;color:inherit}
-  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Workforce · Employee Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Apply the saved (or system) theme before first paint to avoid a flash.
+    (function () {
+      var t = 'light';
+      try {
+        t = localStorage.getItem('ems-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      } catch (e) {}
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
+  <style>
+    :root{
+      --bg:#f6f7fb; --surface:#ffffff; --surface-2:#f9fafc; --sunken:#f1f3f8;
+      --text:#0f172a; --text-2:#475569; --muted:#7c8aa0;
+      --line:#e7eaf1; --line-strong:#d8dde8;
+      --accent:#4f46e5; --accent-soft:#eef0ff; --accent-text:#4338ca;
+      --btn:#4f46e5; --btn-hover:#4338ca;
+      --ok:#059669; --ok-soft:#e5f6ee; --off:#64748b; --off-soft:#eef1f5;
+      --danger:#dc2626; --danger-soft:#fdecec; --warn:#b45309; --warn-soft:#fdf2df;
+      --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+      --shadow-md:0 1px 2px rgba(16,24,40,.04),0 10px 28px -10px rgba(16,24,40,.12);
+      --shadow-lg:0 28px 70px -14px rgba(16,24,40,.35);
+      --r:14px; --r-lg:20px;
+      color-scheme:light;
+    }
+    :root[data-theme="dark"]{
+      --bg:#0a0c11; --surface:#11141b; --surface-2:#151922; --sunken:#0d1016;
+      --text:#e9ecf3; --text-2:#aab2c5; --muted:#7b859b;
+      --line:#1f2431; --line-strong:#2c3243;
+      --accent:#818cf8; --accent-soft:rgba(129,140,248,.14); --accent-text:#a5adff;
+      --btn:#6366f1; --btn-hover:#7377f5;
+      --ok:#34d399; --ok-soft:rgba(52,211,153,.12); --off:#9aa3b7; --off-soft:rgba(154,163,183,.12);
+      --danger:#f87171; --danger-soft:rgba(248,113,113,.12); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.12);
+      --shadow-sm:none;
+      --shadow-md:0 0 0 1px rgba(255,255,255,.015),0 14px 32px -14px rgba(0,0,0,.65);
+      --shadow-lg:0 32px 80px -10px rgba(0,0,0,.75);
+      color-scheme:dark;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);
+      font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+    button,input,select{font:inherit;color:inherit}
+    button{cursor:pointer}
+    :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-  /* Sidebar */
-  aside{position:sticky;top:0;height:100vh;padding:26px 18px;display:flex;flex-direction:column;gap:28px;
-        background:var(--surface);border-right:1px solid var(--line)}
-  .brand{display:flex;align-items:center;gap:12px;padding:0 8px}
-  .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:700;
-        background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 8px 20px rgba(99,102,241,.35)}
-  .brand b{font-size:16px;letter-spacing:-.01em}
-  .brand small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
-  nav{display:flex;flex-direction:column;gap:4px}
-  nav button,nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border:0;border-radius:12px;background:none;
-        color:var(--muted);cursor:pointer;font-weight:500;text-decoration:none;text-align:left;transition:.15s}
-  nav button:hover,nav a:hover{background:var(--surface-2);color:var(--text)}
-  nav button.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
-  nav svg{width:19px;height:19px;flex:none}
-  .spacer{flex:1}
+    /* ---------- Layout ---------- */
+    .app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+    aside{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 16px;
+      background:var(--surface);border-right:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:11px;padding:2px 8px 24px}
+    .logo{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;color:#fff;background:var(--btn);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 14px -4px rgba(79,70,229,.55)}
+    .logo svg{width:18px;height:18px}
+    .brand b{display:block;font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.25}
+    .brand small{color:var(--muted);font-size:12px}
+    .nav-label{padding:0 10px 8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    nav{display:flex;flex-direction:column;gap:2px}
+    .nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:9px 10px;border:0;border-radius:9px;background:none;
+      color:var(--text-2);font-weight:500;text-decoration:none;text-align:left;transition:background .15s,color .15s}
+    .nav-item:hover{background:var(--sunken);color:var(--text)}
+    .nav-item.on{background:var(--accent-soft);color:var(--accent-text);font-weight:600}
+    .nav-item svg{width:18px;height:18px;flex:none}
+    .nav-item .count{margin-left:auto;padding:1px 8px;border-radius:99px;background:var(--sunken);color:var(--muted);font-size:12px;font-weight:600}
+    .nav-item.on .count{background:var(--surface);color:var(--accent-text)}
+    .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:2px;padding-top:14px;border-top:1px solid var(--line)}
 
-  /* Main */
-  main{padding:34px clamp(18px,4vw,48px) 60px;max-width:1280px;width:100%}
-  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
-  h1{margin:0;font-size:28px;letter-spacing:-.02em}
-  .head p{margin:6px 0 0;color:var(--muted)}
-  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;padding:11px 18px;font-weight:600;
-       cursor:pointer;transition:.15s}
-  .btn.primary{color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 8px 20px rgba(99,102,241,.3)}
-  .btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(99,102,241,.38)}
-  .btn.ghost{background:var(--surface-2);border:1px solid var(--line)}
-  .btn.ghost:hover{background:var(--line)}
-  .btn.danger{background:var(--danger);color:#fff}
+    main{padding:32px clamp(18px,3.5vw,44px) 56px;max-width:1240px;width:100%}
+    .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+    h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.02em}
+    .page-head p{margin:4px 0 0;color:var(--muted)}
 
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:22px}
-  .stat{background:var(--surface);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);border:1px solid var(--line)}
-  .stat span{color:var(--muted);font-size:13px}
-  .stat b{display:block;font-size:30px;margin-top:6px;letter-spacing:-.02em}
+    /* ---------- Buttons ---------- */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border:1px solid transparent;
+      border-radius:10px;font-weight:600;white-space:nowrap;transition:background .15s,border-color .15s,filter .15s,transform .05s}
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:.6;cursor:default}
+    .btn svg{width:16px;height:16px}
+    .btn.primary{background:var(--btn);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),var(--shadow-sm)}
+    .btn.primary:hover:not(:disabled){background:var(--btn-hover)}
+    .btn.secondary{background:var(--surface);border-color:var(--line-strong);color:var(--text)}
+    .btn.secondary:hover:not(:disabled){background:var(--sunken)}
+    .btn.danger{background:var(--danger);color:#fff}
+    :root[data-theme="dark"] .btn.danger{color:#1a0b0b}
+    .btn.danger:hover:not(:disabled){filter:brightness(.93)}
+    .btn.sm{height:32px;padding:0 12px;font-size:13px}
+    .icon-btn{width:32px;height:32px;flex:none;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:var(--muted);transition:background .15s,color .15s}
+    .icon-btn:hover{background:var(--sunken);color:var(--text)}
+    .icon-btn.del:hover{background:var(--danger-soft);color:var(--danger)}
+    .icon-btn svg{width:16px;height:16px}
 
-  .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line)}
-  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px}
-  .field{position:relative;flex:1;min-width:200px}
-  .field svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;color:var(--muted)}
-  input,select,textarea{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);
-        outline:none;transition:.15s}
-  .field input{padding-left:40px}
-  input:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
-  .toolbar select{width:auto;min-width:170px}
-  .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);
-        background:var(--surface-2);cursor:pointer;user-select:none;font-weight:500}
-  .chip input{width:auto;accent-color:var(--brand)}
+    /* ---------- Stats ---------- */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:20px}
+    .stat{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);
+      border-radius:var(--r);box-shadow:var(--shadow-sm)}
+    .stat-ico{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-text)}
+    .stat-ico.ok{background:var(--ok-soft);color:var(--ok)}
+    .stat-ico svg{width:20px;height:20px}
+    .stat span{display:block;color:var(--muted);font-size:12.5px;font-weight:500}
+    .stat b{display:block;margin-top:1px;font-size:24px;font-weight:650;letter-spacing:-.02em;line-height:1.2}
 
-  table{width:100%;border-collapse:collapse}
-  th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
-     padding:12px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface-2)}
-  td{padding:14px 18px;border-bottom:1px solid var(--line);vertical-align:middle}
-  tr:last-child td{border-bottom:0}
-  tbody tr{transition:.12s}
-  tbody tr:hover{background:var(--surface-2)}
-  .who{display:flex;align-items:center;gap:12px}
-  .who b{display:block;font-weight:600}
-  .who small,.muted{color:var(--muted)}
-  .who small{font-size:12.5px}
-  .avatar{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;
-          background:hsl(var(--h) 80% 60% / .18);color:hsl(var(--h) 65% 45%)}
-  .pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:600}
-  .pill.dept{background:var(--brand-soft);color:var(--brand)}
-  .pill.ok{background:var(--ok-soft);color:var(--ok)}
-  .pill.off{background:var(--off-soft);color:var(--off)}
-  .actions{display:flex;gap:6px;justify-content:flex-end}
-  .icon{width:34px;height:34px;border-radius:10px;border:0;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s}
-  .icon:hover{background:var(--line);color:var(--text)}
-  .icon.del:hover{background:var(--danger-soft);color:var(--danger)}
-  .icon svg{width:17px;height:17px}
-  .empty{padding:56px 20px;text-align:center;color:var(--muted)}
+    /* ---------- Card, toolbar, form controls ---------- */
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-md);overflow:hidden}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .search{position:relative;flex:1 1 240px;min-width:200px}
+    .search svg{position:absolute;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+    .search .control{padding-left:36px}
+    .control{display:block;width:100%;height:38px;padding:0 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);
+      outline:none;transition:border-color .15s,box-shadow .15s}
+    .control::placeholder{color:var(--muted)}
+    .control:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+    select.control{width:auto;min-width:176px;padding-right:34px;appearance:none;background-repeat:no-repeat;background-position:right 11px center;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c8aa0' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+    .seg{display:inline-flex;gap:2px;padding:3px;background:var(--sunken);border:1px solid var(--line);border-radius:10px}
+    .seg button{height:30px;padding:0 14px;border:0;border-radius:7px;background:none;color:var(--text-2);font-weight:500}
+    .seg button.on{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow-sm)}
+    :root[data-theme="dark"] .seg button.on{background:var(--line-strong)}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
-  .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;
-        display:flex;flex-direction:column;gap:14px;transition:.18s}
-  .tile:hover{transform:translateY(-3px)}
-  .tile h3{margin:0;font-size:17px;letter-spacing:-.01em}
-  .tile p{margin:0;color:var(--muted);line-height:1.5;min-height:42px}
-  .tile .foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
-  .tile .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-  .dates{font-size:12.5px;color:var(--muted)}
+    /* ---------- Table ---------- */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;min-width:820px;border-collapse:collapse}
+    th{padding:10px 16px;text-align:left;white-space:nowrap;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--muted);background:var(--surface-2);border-bottom:1px solid var(--line)}
+    td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+    tbody tr:last-child td{border-bottom:0}
+    tbody tr:hover td{background:var(--surface-2)}
+    td.num{font-variant-numeric:tabular-nums}
+    .muted{color:var(--muted)}
+    td.muted{white-space:nowrap}
+    .who{display:flex;align-items:center;gap:12px;min-width:210px}
+    .who b{display:block;font-weight:600;line-height:1.3}
+    .who small{color:var(--muted);font-size:12.5px}
+    .avatar,.tile-ico{--h:230;display:grid;place-items:center;flex:none;font-weight:650;text-transform:uppercase;
+      background:hsl(var(--h) 75% 94%);color:hsl(var(--h) 55% 36%);box-shadow:inset 0 0 0 1px hsl(var(--h) 60% 86%)}
+    :root[data-theme="dark"] .avatar,:root[data-theme="dark"] .tile-ico{background:hsl(var(--h) 45% 22%);color:hsl(var(--h) 85% 84%);box-shadow:inset 0 0 0 1px hsl(var(--h) 40% 32%)}
+    .avatar{width:36px;height:36px;border-radius:50%;font-size:12.5px}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+    .badge.dept{background:var(--accent-soft);color:var(--accent-text)}
+    .badge.ok{background:var(--ok-soft);color:var(--ok)}
+    .badge.off{background:var(--off-soft);color:var(--off)}
+    .badge.warn{background:var(--warn-soft);color:var(--warn)}
+    .badge.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+    .actions{display:flex;gap:2px;justify-content:flex-end}
+    .table-foot{padding:12px 16px;border-top:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12.5px}
 
-  /* Dialog */
-  dialog{border:0;border-radius:22px;padding:0;width:min(480px,92vw);background:var(--surface);color:var(--text);
-         box-shadow:0 30px 80px rgba(0,0,0,.35)}
-  dialog::backdrop{background:rgba(10,14,30,.55);backdrop-filter:blur(4px)}
-  dialog .body{padding:26px}
-  dialog h3{margin:0 0 18px;font-size:20px;letter-spacing:-.01em}
-  .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .fields label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--muted)}
-  .fields .full{grid-column:1/-1}
-  .dlg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
-  .members{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto;margin:6px 0 16px}
-  .member{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;background:var(--surface-2)}
-  .member div{flex:1}.member b{display:block}.member small{color:var(--muted)}
-  .addrow{display:flex;gap:10px}
+    /* ---------- Empty / loading / error states ---------- */
+    .empty{display:flex;flex-direction:column;align-items:center;gap:4px;padding:56px 20px;text-align:center;color:var(--muted)}
+    .empty .ico{width:44px;height:44px;margin-bottom:8px;border-radius:12px;display:grid;place-items:center;background:var(--sunken)}
+    .empty .ico svg{width:20px;height:20px}
+    .empty b{color:var(--text);font-weight:600}
+    .empty .btn{margin-top:14px}
+    .skel{border-radius:8px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line) 37%,var(--sunken) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite}
+    @keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
 
-  #toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,30px);opacity:0;pointer-events:none;transition:.25s;
-         padding:13px 20px;border-radius:14px;font-weight:500;color:#fff;background:#0f172a;box-shadow:0 14px 40px rgba(0,0,0,.3);z-index:99}
-  #toast.show{opacity:1;transform:translate(-50%,0)}
-  #toast.err{background:var(--danger)}
+    /* ---------- Department / project tiles ---------- */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+    .tile{display:flex;flex-direction:column;gap:14px;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+      box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s,border-color .2s}
+    .tile:hover{box-shadow:var(--shadow-md);border-color:var(--line-strong);transform:translateY(-2px)}
+    .tile-top{display:flex;align-items:flex-start;gap:12px}
+    .tile-ico{width:40px;height:40px;border-radius:11px;font-size:16px}
+    .tile-title{flex:1;min-width:0;padding-top:1px}
+    .tile h3{margin:0;font-size:15.5px;font-weight:620;letter-spacing:-.01em;overflow-wrap:anywhere}
+    .tile p{margin:0;min-height:40px;color:var(--text-2)}
+    .tile-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+    .meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12.5px}
+    .progress{height:6px;border-radius:99px;background:var(--sunken);overflow:hidden}
+    .progress i{display:block;height:100%;border-radius:inherit;background:var(--accent)}
 
-  @media (max-width:900px){
-    .app{grid-template-columns:1fr}
-    aside{position:static;height:auto;flex-direction:row;align-items:center;padding:12px 16px;gap:10px;overflow-x:auto}
-    .brand small,.spacer,nav a{display:none}
-    nav{flex-direction:row}
-    .card{overflow-x:auto}
-    .fields{grid-template-columns:1fr}
-  }
-</style>
+    /* ---------- Dialog ---------- */
+    dialog{width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--line);border-radius:var(--r-lg);
+      background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg)}
+    dialog[open]{animation:pop .18s ease-out}
+    dialog::backdrop{background:rgba(9,12,20,.55);backdrop-filter:blur(3px);animation:fade .18s ease-out}
+    @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+    .dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px 0}
+    .dlg-head h3{margin:0;font-size:18px;font-weight:650;letter-spacing:-.01em;overflow-wrap:anywhere}
+    .dlg-body{padding:18px 24px 4px}
+    .dlg-foot{display:flex;justify-content:flex-end;gap:10px;padding:18px 24px 22px}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .fields label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:550;color:var(--text-2)}
+    .fields .full{grid-column:1/-1}
+    .confirm{grid-column:1/-1;margin:0;color:var(--text-2);line-height:1.6}
+    .confirm b{color:var(--text)}
+    /* Error shown inside the dialog so it is never hidden behind it */
+    .form-error{display:none;margin-top:16px;padding:11px 14px;border:1px solid color-mix(in srgb,var(--danger) 28%,transparent);
+      border-radius:10px;background:var(--danger-soft);color:var(--danger);font-size:13px;font-weight:500;line-height:1.5}
+    .form-error.show{display:block}
+    .members{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;margin-bottom:14px}
+    .member{display:flex;align-items:center;gap:12px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+    .member .info{flex:1;min-width:0}
+    .member b{display:block;font-weight:600}
+    .member small{color:var(--muted)}
+    .addrow{display:flex;gap:10px}
+    .addrow select{flex:1;width:auto}
+
+    #toast{position:fixed;left:50%;bottom:28px;z-index:99;padding:11px 18px;border-radius:12px;background:#111827;color:#fff;font-weight:550;
+      box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transform:translate(-50%,16px);transition:opacity .22s,transform .22s}
+    #toast.show{opacity:1;transform:translate(-50%,0)}
+    #toast.err{background:var(--danger)}
+    :root[data-theme="dark"] #toast.err{color:#1a0b0b}
+
+    @media (max-width:900px){
+      .app{grid-template-columns:1fr}
+      aside{position:static;height:auto;flex-direction:row;align-items:center;gap:8px;padding:10px 14px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+      .brand{padding:0 8px 0 0}
+      .brand small,.nav-label,.nav-item .count{display:none}
+      nav{flex-direction:row}
+      .nav-item{width:auto;white-space:nowrap}
+      .side-foot{flex-direction:row;margin:0 0 0 auto;padding:0;border:0}
+      .fields{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
 <div class="app">
-  <aside>
-    <div class="brand"><div class="logo">W</div><div><b>Workforce</b><small>Employee management</small></div></div>
-    <nav id="nav">
-      <button data-tab="employees" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.4c2.2.6 3.5 2.6 3.5 5.6"/></svg>Employees</button>
-      <button data-tab="departments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>Departments</button>
-      <button data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.5h7.5A2.5 2.5 0 0121 10v7.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/></svg>Projects</button>
-    </nav>
-    <div class="spacer"></div>
-    <nav><a href="/swagger-ui.html" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>API docs</a></nav>
-  </aside>
+  <aside id="side"></aside>
   <main id="main"></main>
 </div>
-<dialog id="dlg"></dialog>
-<div id="toast"></div>
+<dialog id="dlg" aria-modal="true"></dialog>
+<div id="toast" role="status"></div>
 
 <script>
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const main = $('#main'), dlg = $('#dlg');
-const state = { tab:'employees', all:[], employees:[], departments:[], projects:[], q:'', dept:'', activeOnly:false };
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const main = $('#main'), dlg = $('#dlg');
+  const state = { tab:'employees', loaded:false, loadError:false, all:[], employees:[], departments:[], projects:[], q:'', dept:'', activeOnly:false };
 
-const ICON = {
-  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
-  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16z"/></svg>',
-  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>',
-  plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
-};
+  // Browser-side validation patterns (the server enforces the same rules).
+  // The hyphen is escaped because browsers compile `pattern` in strict unicode-sets mode.
+  const NAME_PATTERN  = "[A-Za-z][A-Za-z .'\\-]*";
+  const TITLE_PATTERN = "[A-Za-z][A-Za-z .,'\\-]*";
 
-// ---------- helpers ----------
-async function api(path, method = 'GET', body) {
-  const res = await fetch('/api' + path, { method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined });
-  if (res.status === 204) return null;
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const fe = data && data.fieldErrors && Object.keys(data.fieldErrors).length
-      ? Object.entries(data.fieldErrors).map(([k, v]) => `${k}: ${v}`).join(' · ') : null;
-    throw new Error(fe || (data && (data.message || data.detail)) || 'Something went wrong');
-  }
-  return data;
-}
-let toastTimer;
-function toast(msg, err = false) {
-  const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = '', 3200);
-}
-const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '—';
-const money = n => n == null ? '—' : new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', maximumFractionDigits:0}).format(n);
-const avatar = e => `<span class="avatar" style="--h:${(e.id * 57) % 360}">${esc((e.firstName[0] || '') + (e.lastName[0] || ''))}</span>`;
-const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-
-function modal(title, fields, onSubmit, label = 'Save', danger = false) {
-  dlg.innerHTML = `<form class="body"><h3>${title}</h3><div class="fields">${fields}</div>
-    <div class="dlg-actions"><button type="button" class="btn ghost" data-close>Cancel</button>
-    <button class="btn ${danger ? 'danger' : 'primary'}">${label}</button></div></form>`;
-  const f = dlg.querySelector('form');
-  f.querySelector('[data-close]').onclick = () => dlg.close();
-  f.onsubmit = async ev => {
-    ev.preventDefault();
-    try { await onSubmit(Object.fromEntries(new FormData(f))); dlg.close(); }
-    catch (err) { toast(err.message, true); }
+  const ico = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    logo:   ico('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>'),
+    users:  ico('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.4c2.2.6 3.5 2.6 3.5 5.6"/>'),
+    grid:   ico('<rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>'),
+    folder: ico('<path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.5h7.5A2.5 2.5 0 0121 10v7.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/>'),
+    code:   ico('<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>'),
+    search: ico('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
+    edit:   ico('<path d="M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16z"/>'),
+    trash:  ico('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>'),
+    plus:   ico('<path d="M12 5v14M5 12h14"/>'),
+    x:      ico('<path d="M6 6l12 12M18 6L6 18"/>'),
+    check:  ico('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+    sun:    ico('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+    moon:   ico('<path d="M21 12.8A8.5 8.5 0 1111.2 3a6.5 6.5 0 009.8 9.8z"/>')
   };
-  if (!dlg.open) dlg.showModal();
-}
-dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 
-// ---------- data ----------
-async function loadEmployees() {
-  let path = '/employees';
-  if (state.q.trim()) path = '/employees/search?name=' + encodeURIComponent(state.q.trim());
-  else if (state.dept) path = '/employees/department/' + state.dept;
-  else if (state.activeOnly) path = '/employees/active';
-  let list = await api(path);
-  if (state.dept) list = list.filter(e => String(e.departmentId) === state.dept);
-  if (state.activeOnly) list = list.filter(e => e.active);
-  state.employees = list;
-}
-async function refresh() {
-  try {
-    [state.departments, state.projects, state.all] = await Promise.all([api('/departments'), api('/projects'), api('/employees')]);
-    await loadEmployees();
-    draw();
-  } catch (err) { toast(err.message, true); }
-}
+  // ---------- helpers ----------
+  const nice = k => { const s = k.replace(/([A-Z])/g, ' $1').toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); };
+  async function api(path, method = 'GET', body) {
+    const res = await fetch('/api' + path, { method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined });
+    if (res.status === 204) return null;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const fe = data && data.fieldErrors && Object.keys(data.fieldErrors).length
+              ? Object.entries(data.fieldErrors).map(([k, v]) => {
+                const label = nice(k);
+                return String(v).toLowerCase().startsWith(label.toLowerCase()) ? v : `${label}: ${v}`;
+              }).join(' · ')
+              : null;
+      throw new Error(fe || (data && (data.message || data.detail)) || 'Something went wrong');
+    }
+    return data;
+  }
+  let toastTimer;
+  function toast(msg, err = false) {
+    const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = '', 3200);
+  }
+  const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '—';
+  const money = n => n == null ? '—' : new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', maximumFractionDigits:0}).format(n);
+  const avatar = e => `<span class="avatar" style="--h:${(e.id * 57) % 360}">${esc((e.firstName[0] || '') + (e.lastName[0] || ''))}</span>`;
+  const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+  const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 
-// ---------- views ----------
-function header(title, sub, action) {
-  return `<div class="head"><div><h1>${title}</h1><p>${sub}</p></div>
-    <button class="btn primary" data-act="${action}">${ICON.plus} Add ${title.slice(0, -1).toLowerCase().replace('ie', 'y')}</button></div>`;
-}
-function draw() {
-  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === state.tab));
-  if (state.tab === 'employees') drawEmployees();
-  else if (state.tab === 'departments') drawDepartments();
-  else drawProjects();
-}
+  function projectStatus(p) {
+    const t = todayStr();
+    if (p.startDate && p.startDate > t) return { label:'Upcoming', cls:'warn' };
+    if (p.endDate && p.endDate < t) return { label:'Completed', cls:'off' };
+    return { label:'In progress', cls:'ok' };
+  }
+  function projectProgress(p) {
+    if (!p.startDate || !p.endDate) return null;
+    const s = new Date(p.startDate), e = new Date(p.endDate), span = e - s;
+    if (span <= 0) return null;
+    return Math.max(0, Math.min(100, Math.round((Date.now() - s) / span * 100)));
+  }
 
-function drawEmployees() {
-  const active = state.all.filter(e => e.active).length;
-  main.innerHTML = header('Employees', 'Everyone in your organisation, at a glance.', 'add-emp') + `
+  // ---------- dialog ----------
+  function modal(title, fields, onSubmit, label = 'Save', danger = false) {
+    dlg.innerHTML = `<form>
+    <div class="dlg-head"><h3>${esc(title)}</h3><button type="button" class="icon-btn" data-close aria-label="Close">${ICON.x}</button></div>
+    <div class="dlg-body"><div class="fields">${fields}</div><div class="form-error" role="alert"></div></div>
+    <div class="dlg-foot"><button type="button" class="btn secondary" data-close>Cancel</button>
+      <button class="btn ${danger ? 'danger' : 'primary'}">${label}</button></div></form>`;
+    const f = dlg.querySelector('form');
+    f.querySelectorAll('[data-close]').forEach(b => b.onclick = () => dlg.close());
+    f.onsubmit = async ev => {
+      ev.preventDefault();
+      const box = f.querySelector('.form-error'), btn = f.querySelector('.dlg-foot .btn:last-child');
+      box.classList.remove('show'); btn.disabled = true;
+      try { await onSubmit(Object.fromEntries(new FormData(f))); dlg.close(); }
+      catch (err) { box.textContent = err.message; box.classList.add('show'); }
+      finally { btn.disabled = false; }
+    };
+    if (!dlg.open) dlg.showModal();
+    (f.querySelector('input,select') || f.querySelector('.dlg-foot [data-close]')).focus();
+  }
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+  // ---------- data ----------
+  async function loadEmployees() {
+    let path = '/employees';
+    if (state.q.trim()) path = '/employees/search?name=' + encodeURIComponent(state.q.trim());
+    else if (state.dept) path = '/employees/department/' + state.dept;
+    else if (state.activeOnly) path = '/employees/active';
+    let list = await api(path);
+    if (state.dept) list = list.filter(e => String(e.departmentId) === state.dept);
+    if (state.activeOnly) list = list.filter(e => e.active);
+    state.employees = list;
+  }
+  async function reloadRows() {
+    try { await loadEmployees(); drawRows(); } catch (err) { toast(err.message, true); }
+  }
+  async function refresh() {
+    try {
+      [state.departments, state.projects, state.all] = await Promise.all([api('/departments'), api('/projects'), api('/employees')]);
+      await loadEmployees();
+      state.loaded = true; state.loadError = false;
+      draw();
+    } catch (err) {
+      if (!state.loaded) { state.loadError = true; draw(); }
+      toast(err.message, true);
+    }
+  }
+
+  // ---------- views ----------
+  function drawSide() {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const item = (tab, label, icon, count) =>
+            `<button class="nav-item ${state.tab === tab ? 'on' : ''}" data-tab="${tab}">${icon}<span>${label}</span><span class="count">${state.loaded ? count : '–'}</span></button>`;
+    $('#side').innerHTML = `
+    <div class="brand"><div class="logo">${ICON.logo}</div><div><b>Workforce</b><small>Employee management</small></div></div>
+    <div class="nav-label">Manage</div>
+    <nav>${item('employees', 'Employees', ICON.users, state.all.length)}
+         ${item('departments', 'Departments', ICON.grid, state.departments.length)}
+         ${item('projects', 'Projects', ICON.folder, state.projects.length)}</nav>
+    <div class="side-foot">
+      <a class="nav-item" href="/swagger-ui.html" target="_blank" rel="noopener">${ICON.code}<span>API docs</span></a>
+      <button class="nav-item" type="button" data-theme-toggle>${dark ? ICON.sun : ICON.moon}<span>${dark ? 'Light mode' : 'Dark mode'}</span></button>
+    </div>`;
+  }
+  const head = (title, sub, act, label) =>
+          `<div class="page-head"><div><h1>${title}</h1><p>${sub}</p></div><button class="btn primary" data-act="${act}">${ICON.plus}${label}</button></div>`;
+  const stat = (icon, label, value, tone = '') =>
+          `<div class="stat"><div class="stat-ico ${tone}">${icon}</div><div><span>${label}</span><b>${value}</b></div></div>`;
+  const emptyCard = (title, sub) =>
+          `<div class="card"><div class="empty"><div class="ico">${ICON.folder}</div><b>${title}</b><span>${sub}</span></div></div>`;
+  const actionBtns = (kind, id) =>
+          `<div class="actions"><button class="icon-btn" aria-label="Edit" title="Edit" data-act="edit-${kind}" data-id="${id}">${ICON.edit}</button>
+   <button class="icon-btn del" aria-label="Delete" title="Delete" data-act="del-${kind}" data-id="${id}">${ICON.trash}</button></div>`;
+
+  function skeletonView() {
+    const row = '<div class="skel" style="height:46px;margin:14px 16px"></div>';
+    return `<div class="page-head"><div><div class="skel" style="width:180px;height:28px"></div><div class="skel" style="width:280px;height:16px;margin-top:10px"></div></div></div>
+    <div class="stats">${'<div class="skel" style="height:74px;border-radius:14px"></div>'.repeat(4)}</div>
+    <div class="card">${row.repeat(5)}</div>`;
+  }
+  function errorView() {
+    return `<div class="card"><div class="empty"><div class="ico">${ICON.code}</div><b>Can't reach the server</b>
+    <span>Check that the application and MySQL are running, then try again.</span>
+    <button class="btn primary" data-act="retry">Try again</button></div></div>`;
+  }
+
+  function draw() {
+    drawSide();
+    if (!state.loaded) { main.innerHTML = state.loadError ? errorView() : skeletonView(); return; }
+    if (state.tab === 'employees') drawEmployees();
+    else if (state.tab === 'departments') drawDepartments();
+    else drawProjects();
+  }
+
+  function drawEmployees() {
+    const active = state.all.filter(e => e.active).length;
+    main.innerHTML = head('Employees', 'Everyone in your organisation, at a glance.', 'add-emp', 'Add employee') + `
     <div class="stats">
-      <div class="stat"><span>Total employees</span><b>${state.all.length}</b></div>
-      <div class="stat"><span>Active</span><b>${active}</b></div>
-      <div class="stat"><span>Departments</span><b>${state.departments.length}</b></div>
-      <div class="stat"><span>Projects</span><b>${state.projects.length}</b></div>
+      ${stat(ICON.users, 'Total employees', state.all.length)}
+      ${stat(ICON.check, 'Active', active, 'ok')}
+      ${stat(ICON.grid, 'Departments', state.departments.length)}
+      ${stat(ICON.folder, 'Projects', state.projects.length)}
     </div>
     <div class="card">
       <div class="toolbar">
-        <div class="field">${ICON.search}<input id="q" placeholder="Search by name…" value="${esc(state.q)}"></div>
-        <select id="deptFilter"><option value="">All departments</option>
+        <div class="search">${ICON.search}<input class="control" id="q" type="search" placeholder="Search by name…" aria-label="Search employees" value="${esc(state.q)}"></div>
+        <select class="control" id="deptFilter" aria-label="Filter by department"><option value="">All departments</option>
           ${state.departments.map(d => `<option value="${d.id}" ${String(d.id) === state.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select>
-        <label class="chip"><input type="checkbox" id="activeOnly" ${state.activeOnly ? 'checked' : ''}> Active only</label>
+        <div class="seg" id="seg" role="group" aria-label="Status filter">
+          <button type="button" data-v="all" class="${state.activeOnly ? '' : 'on'}">All</button>
+          <button type="button" data-v="active" class="${state.activeOnly ? 'on' : ''}">Active</button>
+        </div>
       </div>
       <div id="rows"></div>
     </div>`;
-  $('#q').oninput = debounce(async e => { state.q = e.target.value; await loadEmployees(); drawRows(); });
-  $('#deptFilter').onchange = async e => { state.dept = e.target.value; await loadEmployees(); drawRows(); };
-  $('#activeOnly').onchange = async e => { state.activeOnly = e.target.checked; await loadEmployees(); drawRows(); };
-  drawRows();
-}
-function drawRows() {
-  const rows = state.employees;
-  $('#rows').innerHTML = !rows.length ? '<div class="empty">No employees match your filters.</div>' : `
-    <table><thead><tr><th>Employee</th><th>Role</th><th>Department</th><th>Hired</th><th>Salary</th><th>Status</th><th></th></tr></thead><tbody>
+    $('#q').oninput = debounce(e => { state.q = e.target.value; reloadRows(); });
+    $('#deptFilter').onchange = e => { state.dept = e.target.value; reloadRows(); };
+    $('#seg').onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      state.activeOnly = b.dataset.v === 'active';
+      document.querySelectorAll('#seg button').forEach(x => x.classList.toggle('on', x === b));
+      reloadRows();
+    };
+    drawRows();
+  }
+  function drawRows() {
+    const rows = state.employees;
+    $('#rows').innerHTML = !rows.length
+            ? `<div class="empty"><div class="ico">${ICON.search}</div><b>No employees found</b><span>Try a different name or clear the filters.</span></div>`
+            : `<div class="table-wrap"><table><thead><tr><th>Employee</th><th>Role</th><th>Department</th><th>Hired</th><th>Salary</th><th>Status</th><th></th></tr></thead><tbody>
     ${rows.map(e => `<tr>
       <td><div class="who">${avatar(e)}<div><b>${esc(e.fullName)}</b><small>${esc(e.email)}</small></div></div></td>
       <td>${esc(e.jobTitle || '—')}</td>
-      <td><span class="pill dept">${esc(e.departmentName)}</span></td>
+      <td><span class="badge dept">${esc(e.departmentName)}</span></td>
       <td class="muted">${fmtDate(e.hireDate)}</td>
-      <td>${money(e.salary)}</td>
-      <td><span class="pill ${e.active ? 'ok' : 'off'}">${e.active ? 'Active' : 'Inactive'}</span></td>
-      <td><div class="actions"><button class="icon" title="Edit" data-act="edit-emp" data-id="${e.id}">${ICON.edit}</button>
-        <button class="icon del" title="Delete" data-act="del-emp" data-id="${e.id}">${ICON.del}</button></div></td></tr>`).join('')}
-    </tbody></table>`;
-}
+      <td class="num">${money(e.salary)}</td>
+      <td><span class="badge dot ${e.active ? 'ok' : 'off'}">${e.active ? 'Active' : 'Inactive'}</span></td>
+      <td>${actionBtns('emp', e.id)}</td></tr>`).join('')}
+    </tbody></table></div><div class="table-foot">Showing ${rows.length} of ${state.all.length} employees</div>`;
+  }
 
-function drawDepartments() {
-  main.innerHTML = header('Departments', 'Teams that make up the organisation.', 'add-dep') + (!state.departments.length
-    ? '<div class="card empty">No departments yet.</div>'
-    : `<div class="grid">${state.departments.map(d => `<div class="tile">
-        <div class="top"><h3>${esc(d.name)}</h3><div class="actions">
-          <button class="icon" title="Edit" data-act="edit-dep" data-id="${d.id}">${ICON.edit}</button>
-          <button class="icon del" title="Delete" data-act="del-dep" data-id="${d.id}">${ICON.del}</button></div></div>
+  function drawDepartments() {
+    main.innerHTML = head('Departments', 'Teams that make up the organisation.', 'add-dep', 'Add department') + (!state.departments.length
+            ? emptyCard('No departments yet', 'Create a department to start adding employees.')
+            : `<div class="grid">${state.departments.map(d => `<div class="tile">
+        <div class="tile-top"><div class="tile-ico" style="--h:${(d.id * 47) % 360}">${esc(d.name[0])}</div>
+          <div class="tile-title"><h3>${esc(d.name)}</h3></div>${actionBtns('dep', d.id)}</div>
         <p>${esc(d.description || 'No description')}</p>
-        <div class="foot"><span class="pill dept">${d.employeeCount} ${d.employeeCount === 1 ? 'person' : 'people'}</span></div></div>`).join('')}</div>`);
-}
+        <div class="tile-foot"><span class="badge dept">${d.employeeCount} ${d.employeeCount === 1 ? 'person' : 'people'}</span></div></div>`).join('')}</div>`);
+  }
 
-function drawProjects() {
-  main.innerHTML = header('Projects', 'Track initiatives and who is working on them.', 'add-prj') + (!state.projects.length
-    ? '<div class="card empty">No projects yet.</div>'
-    : `<div class="grid">${state.projects.map(p => `<div class="tile">
-        <div class="top"><h3>${esc(p.name)}</h3><div class="actions">
-          <button class="icon" title="Edit" data-act="edit-prj" data-id="${p.id}">${ICON.edit}</button>
-          <button class="icon del" title="Delete" data-act="del-prj" data-id="${p.id}">${ICON.del}</button></div></div>
+  function drawProjects() {
+    main.innerHTML = head('Projects', 'Track initiatives and who is working on them.', 'add-prj', 'Add project') + (!state.projects.length
+            ? emptyCard('No projects yet', 'Create a project, then assign people to it.')
+            : `<div class="grid">${state.projects.map(p => {
+              const st = projectStatus(p), pct = projectProgress(p);
+              return `<div class="tile">
+        <div class="tile-top"><div class="tile-ico" style="--h:${(p.id * 83) % 360}">${esc(p.name[0])}</div>
+          <div class="tile-title"><h3>${esc(p.name)}</h3><span class="badge dot ${st.cls}" style="margin-top:6px">${st.label}</span></div>${actionBtns('prj', p.id)}</div>
         <p>${esc(p.description || 'No description')}</p>
-        <div class="dates">${fmtDate(p.startDate)} → ${p.endDate ? fmtDate(p.endDate) : 'ongoing'}</div>
-        <div class="foot"><span class="pill dept">${p.employeeCount} on team</span>
-          <button class="btn ghost" data-act="team" data-id="${p.id}">Manage team</button></div></div>`).join('')}</div>`);
-}
+        <div><div class="meta"><span>${fmtDate(p.startDate)} → ${p.endDate ? fmtDate(p.endDate) : 'Ongoing'}</span>${pct === null ? '' : `<span>${pct}%</span>`}</div>
+          ${pct === null ? '' : `<div class="progress" style="margin-top:8px"><i style="width:${pct}%"></i></div>`}</div>
+        <div class="tile-foot"><span class="badge dept">${p.employeeCount} on team</span>
+          <button class="btn secondary sm" data-act="team" data-id="${p.id}">Manage team</button></div></div>`; }).join('')}</div>`);
+  }
 
-// ---------- forms ----------
-function empForm(e = {}) {
-  if (!state.departments.length) return toast('Create a department first', true);
-  modal(e.id ? 'Edit employee' : 'Add employee', `
-    <label>First name<input name="firstName" required value="${esc(e.firstName)}"></label>
-    <label>Last name<input name="lastName" required value="${esc(e.lastName)}"></label>
-    <label class="full">Email<input type="email" name="email" required value="${esc(e.email)}"></label>
-    <label>Job title<input name="jobTitle" value="${esc(e.jobTitle)}"></label>
-    <label>Salary (₹)<input type="number" min="0" name="salary" value="${e.salary ?? ''}"></label>
-    <label>Hire date<input type="date" name="hireDate" required value="${e.hireDate || ''}"></label>
-    <label>Department<select name="departmentId">${state.departments.map(d =>
-      `<option value="${d.id}" ${d.id === e.departmentId ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></label>
-    <label class="full">Status<select name="active"><option value="true" ${e.active !== false ? 'selected' : ''}>Active</option>
+  // ---------- forms ----------
+  function empForm(e = {}) {
+    if (!state.departments.length) return toast('Create a department first', true);
+    modal(e.id ? 'Edit employee' : 'Add employee', `
+    <label>First name<input class="control" name="firstName" required maxlength="80" pattern="${NAME_PATTERN}" title="Letters only, no numbers" value="${esc(e.firstName)}"></label>
+    <label>Last name<input class="control" name="lastName" required maxlength="80" pattern="${NAME_PATTERN}" title="Letters only, no numbers" value="${esc(e.lastName)}"></label>
+    <label class="full">Email<input class="control" type="email" name="email" required maxlength="150" value="${esc(e.email)}"></label>
+    <label>Job title<input class="control" name="jobTitle" maxlength="100" pattern="${TITLE_PATTERN}" title="Letters only, no numbers" value="${esc(e.jobTitle)}"></label>
+    <label>Salary (₹)<input class="control" type="number" min="0" step="any" name="salary" value="${e.salary ?? ''}"></label>
+    <label>Hire date<input class="control" type="date" name="hireDate" required value="${e.hireDate || ''}"></label>
+    <label>Department<select class="control" name="departmentId" style="width:100%">${state.departments.map(d =>
+                    `<option value="${d.id}" ${d.id === e.departmentId ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></label>
+    <label class="full">Status<select class="control" name="active" style="width:100%"><option value="true" ${e.active !== false ? 'selected' : ''}>Active</option>
       <option value="false" ${e.active === false ? 'selected' : ''}>Inactive</option></select></label>`,
-    async d => {
-      const payload = { ...d, salary: d.salary === '' ? null : Number(d.salary), departmentId: Number(d.departmentId), active: d.active === 'true' };
-      await api(e.id ? '/employees/' + e.id : '/employees', e.id ? 'PUT' : 'POST', payload);
-      toast(e.id ? 'Employee updated' : 'Employee added'); await refresh();
-    });
-}
-function depForm(d = {}) {
-  modal(d.id ? 'Edit department' : 'Add department', `
-    <label class="full">Name<input name="name" required value="${esc(d.name)}"></label>
-    <label class="full">Description<input name="description" value="${esc(d.description)}"></label>`,
-    async v => { await api(d.id ? '/departments/' + d.id : '/departments', d.id ? 'PUT' : 'POST', v);
-      toast(d.id ? 'Department updated' : 'Department added'); await refresh(); });
-}
-function prjForm(p = {}) {
-  modal(p.id ? 'Edit project' : 'Add project', `
-    <label class="full">Name<input name="name" required value="${esc(p.name)}"></label>
-    <label class="full">Description<input name="description" value="${esc(p.description)}"></label>
-    <label>Start date<input type="date" name="startDate" value="${p.startDate || ''}"></label>
-    <label>End date<input type="date" name="endDate" value="${p.endDate || ''}"></label>`,
-    async v => { const payload = { ...v, startDate: v.startDate || null, endDate: v.endDate || null };
-      await api(p.id ? '/projects/' + p.id : '/projects', p.id ? 'PUT' : 'POST', payload);
-      toast(p.id ? 'Project updated' : 'Project added'); await refresh(); });
-}
-function confirmDelete(what, path) {
-  modal('Delete ' + what + '?', '<p class="full muted" style="margin:0">This action cannot be undone.</p>',
-    async () => { await api(path, 'DELETE'); toast('Deleted'); await refresh(); }, 'Delete', true);
-}
+            async d => {
+              const payload = { ...d, salary: d.salary === '' ? null : Number(d.salary), departmentId: Number(d.departmentId), active: d.active === 'true' };
+              await api(e.id ? '/employees/' + e.id : '/employees', e.id ? 'PUT' : 'POST', payload);
+              toast(e.id ? 'Employee updated' : 'Employee added'); await refresh();
+            });
+  }
+  function depForm(d = {}) {
+    modal(d.id ? 'Edit department' : 'Add department', `
+    <label class="full">Name<input class="control" name="name" required maxlength="100" value="${esc(d.name)}"></label>
+    <label class="full">Description<input class="control" name="description" maxlength="255" value="${esc(d.description)}"></label>`,
+            async v => { await api(d.id ? '/departments/' + d.id : '/departments', d.id ? 'PUT' : 'POST', v);
+              toast(d.id ? 'Department updated' : 'Department added'); await refresh(); });
+  }
+  function prjForm(p = {}) {
+    modal(p.id ? 'Edit project' : 'Add project', `
+    <label class="full">Name<input class="control" name="name" required maxlength="120" value="${esc(p.name)}"></label>
+    <label class="full">Description<input class="control" name="description" maxlength="500" value="${esc(p.description)}"></label>
+    <label>Start date<input class="control" type="date" name="startDate" value="${p.startDate || ''}"></label>
+    <label>End date<input class="control" type="date" name="endDate" value="${p.endDate || ''}"></label>`,
+            async v => { const payload = { ...v, startDate: v.startDate || null, endDate: v.endDate || null };
+              await api(p.id ? '/projects/' + p.id : '/projects', p.id ? 'PUT' : 'POST', payload);
+              toast(p.id ? 'Project updated' : 'Project added'); await refresh(); });
+  }
+  function confirmDelete(what, path, name) {
+    modal('Delete ' + what + '?',
+            `<p class="confirm">${name ? '<b>' + esc(name) + '</b> will be permanently removed. ' : ''}This action cannot be undone.</p>`,
+            async () => { await api(path, 'DELETE'); toast('Deleted'); await refresh(); }, 'Delete', true);
+  }
 
-async function openTeam(id) {
-  try {
-    const [p, members] = await Promise.all([api('/projects/' + id), api(`/projects/${id}/employees`)]);
-    const taken = new Set(members.map(m => m.id));
-    const free = state.all.filter(e => e.active && !taken.has(e.id));
-    dlg.innerHTML = `<div class="body"><h3>${esc(p.name)} · Team</h3>
-      <div class="members">${members.map(m => `<div class="member">${avatar(m)}<div><b>${esc(m.fullName)}</b><small>${esc(m.jobTitle || '')}</small></div>
-        <button class="icon del" title="Remove" data-rm="${m.id}">${ICON.del}</button></div>`).join('') || '<p class="muted">No one is assigned yet.</p>'}</div>
-      ${free.length ? `<div class="addrow"><select id="addEmp">${free.map(e => `<option value="${e.id}">${esc(e.fullName)}</option>`).join('')}</select>
-        <button class="btn primary" id="addBtn">Assign</button></div>` : ''}
-      <div class="dlg-actions"><button class="btn ghost" id="closeBtn">Done</button></div></div>`;
-    $('#closeBtn').onclick = () => dlg.close();
-    const again = async () => { await refresh(); openTeam(id); };
-    if ($('#addBtn')) $('#addBtn').onclick = async () => {
-      try { await api(`/projects/${id}/employees/${$('#addEmp').value}`, 'POST'); await again(); } catch (e) { toast(e.message, true); } };
-    dlg.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
-      try { await api(`/projects/${id}/employees/${b.dataset.rm}`, 'DELETE'); await again(); } catch (e) { toast(e.message, true); } });
-    if (!dlg.open) dlg.showModal();
-  } catch (e) { toast(e.message, true); }
-}
+  async function openTeam(id) {
+    try {
+      const [p, members] = await Promise.all([api('/projects/' + id), api(`/projects/${id}/employees`)]);
+      const taken = new Set(members.map(m => m.id));
+      const free = state.all.filter(e => e.active && !taken.has(e.id));
+      dlg.innerHTML = `<div>
+      <div class="dlg-head"><h3>${esc(p.name)} · Team</h3><button type="button" class="icon-btn" data-close aria-label="Close">${ICON.x}</button></div>
+      <div class="dlg-body">
+        <div class="members">${members.map(m => `<div class="member">${avatar(m)}<div class="info"><b>${esc(m.fullName)}</b><small>${esc(m.jobTitle || '')}</small></div>
+          <button class="icon-btn del" aria-label="Remove ${esc(m.fullName)}" title="Remove" data-rm="${m.id}">${ICON.trash}</button></div>`).join('')
+      || '<p class="muted" style="margin:6px 0">No one is assigned yet.</p>'}</div>
+        ${free.length ? `<div class="addrow"><select class="control" id="addEmp" aria-label="Employee to assign">${free.map(e => `<option value="${e.id}">${esc(e.fullName)}</option>`).join('')}</select>
+          <button class="btn primary" id="addBtn" type="button">Assign</button></div>` : ''}
+        <div class="form-error" role="alert"></div>
+      </div>
+      <div class="dlg-foot"><button class="btn secondary" type="button" data-close>Done</button></div></div>`;
+      dlg.querySelectorAll('[data-close]').forEach(b => b.onclick = () => dlg.close());
+      const showErr = m => { const box = dlg.querySelector('.form-error'); box.textContent = m; box.classList.add('show'); };
+      const again = async () => { await refresh(); openTeam(id); };
+      if ($('#addBtn')) $('#addBtn').onclick = async () => {
+        try { await api(`/projects/${id}/employees/${$('#addEmp').value}`, 'POST'); await again(); } catch (e) { showErr(e.message); } };
+      dlg.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
+        try { await api(`/projects/${id}/employees/${b.dataset.rm}`, 'DELETE'); await again(); } catch (e) { showErr(e.message); } });
+      if (!dlg.open) dlg.showModal();
+    } catch (e) { toast(e.message, true); }
+  }
 
-// ---------- events ----------
-$('#nav').onclick = e => { const b = e.target.closest('button'); if (b) { state.tab = b.dataset.tab; draw(); } };
-main.onclick = e => {
-  const b = e.target.closest('[data-act]'); if (!b) return;
-  const id = Number(b.dataset.id);
-  const find = (list) => list.find(x => x.id === id);
-  ({
-    'add-emp': () => empForm(), 'edit-emp': () => empForm(find(state.all)), 'del-emp': () => confirmDelete('employee', '/employees/' + id),
-    'add-dep': () => depForm(), 'edit-dep': () => depForm(find(state.departments)), 'del-dep': () => confirmDelete('department', '/departments/' + id),
-    'add-prj': () => prjForm(), 'edit-prj': () => prjForm(find(state.projects)), 'del-prj': () => confirmDelete('project', '/projects/' + id),
-    'team': () => openTeam(id)
-  })[b.dataset.act]();
-};
+  // ---------- events ----------
+  $('#side').onclick = e => {
+    const t = e.target.closest('[data-tab]');
+    if (t) { state.tab = t.dataset.tab; draw(); return; }
+    if (e.target.closest('[data-theme-toggle]')) {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem('ems-theme', next); } catch (_) {}
+      drawSide();
+    }
+  };
+  main.onclick = e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const id = Number(b.dataset.id);
+    const find = list => list.find(x => x.id === id);
+    ({
+      'add-emp': () => empForm(), 'edit-emp': () => empForm(find(state.all)),
+      'del-emp': () => confirmDelete('employee', '/employees/' + id, (find(state.all) || {}).fullName),
+      'add-dep': () => depForm(), 'edit-dep': () => depForm(find(state.departments)),
+      'del-dep': () => confirmDelete('department', '/departments/' + id, (find(state.departments) || {}).name),
+      'add-prj': () => prjForm(), 'edit-prj': () => prjForm(find(state.projects)),
+      'del-prj': () => confirmDelete('project', '/projects/' + id, (find(state.projects) || {}).name),
+      'team': () => openTeam(id),
+      'retry': () => { state.loadError = false; draw(); refresh(); }
+    })[b.dataset.act]();
+  };
 
-refresh();
+  draw();
+  refresh();
 </script>
 </body>
 </html>

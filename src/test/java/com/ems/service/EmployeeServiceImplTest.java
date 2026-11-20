@@ -207,4 +207,92 @@ class EmployeeServiceImplTest {
 
         assertThat(service.getActive()).allMatch(EmployeeResponse::active);
     }
+
+    @Test
+    void getHiredAfter_returnsMatchingEmployeesInHireDateOrder() {
+        LocalDate date = LocalDate.of(2024, 1, 15);
+        Employee hiredEarlier = TestData.employee("Mina", "Shah", "mina@example.com", department, true);
+        hiredEarlier.setHireDate(LocalDate.of(2024, 2, 1));
+        Employee hiredLater = TestData.employee("Noah", "Lee", "noah@example.com", department, true);
+        hiredLater.setHireDate(LocalDate.of(2024, 3, 1));
+        when(employeeRepository.findByHireDateAfterOrderByHireDateAsc(date))
+                .thenReturn(List.of(hiredEarlier, hiredLater));
+
+        List<EmployeeResponse> responses = service.getHiredAfter(date);
+
+        assertThat(responses).extracting(EmployeeResponse::email)
+                .containsExactly("mina@example.com", "noah@example.com");
+        assertThat(responses).extracting(EmployeeResponse::hireDate)
+                .containsExactly(LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1));
+        verify(employeeRepository).findByHireDateAfterOrderByHireDateAsc(date);
+    }
+
+    @Test
+    void getHiredAfter_returnsEmptyListWhenNoEmployeesMatch() {
+        LocalDate date = LocalDate.of(2024, 1, 15);
+        when(employeeRepository.findByHireDateAfterOrderByHireDateAsc(date)).thenReturn(List.of());
+
+        assertThat(service.getHiredAfter(date)).isEmpty();
+    }
+
+    @Test
+    void getHiredAfter_nullDateThrows() {
+        assertThatThrownBy(() -> service.getHiredAfter(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("date must not be null");
+    }
+
+    @Test
+    void deactivate_setsActiveFalseAndReturnsEmployee() {
+        when(employeeRepository.findById(5L)).thenReturn(Optional.of(existing));
+
+        EmployeeResponse response = service.deactivate(5L);
+
+        assertThat(response.id()).isEqualTo(5L);
+        assertThat(response.active()).isFalse();
+        assertThat(existing.isActive()).isFalse();
+    }
+
+    @Test
+    void deactivate_alreadyInactive_staysInactive() {
+        existing.setActive(false);
+        when(employeeRepository.findById(5L)).thenReturn(Optional.of(existing));
+
+        assertThat(service.deactivate(5L).active()).isFalse();
+    }
+
+    @Test
+    void deactivate_notFound_throws() {
+        when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deactivate(99L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Employee not found with id 99");
+    }
+
+    @Test
+    void countByDepartment_returnsCount() {
+        when(departmentRepository.existsById(1L)).thenReturn(true);
+        when(employeeRepository.countByDepartmentId(1L)).thenReturn(4L);
+
+        assertThat(service.countByDepartment(1L)).isEqualTo(4L);
+    }
+
+    @Test
+    void countByDepartment_emptyDepartment_returnsZero() {
+        when(departmentRepository.existsById(1L)).thenReturn(true);
+        when(employeeRepository.countByDepartmentId(1L)).thenReturn(0L);
+
+        assertThat(service.countByDepartment(1L)).isZero();
+    }
+
+    @Test
+    void countByDepartment_unknownDepartment_throws() {
+        when(departmentRepository.existsById(3L)).thenReturn(false);
+
+        assertThatThrownBy(() -> service.countByDepartment(3L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Department");
+        verify(employeeRepository, never()).countByDepartmentId(any());
+    }
 }

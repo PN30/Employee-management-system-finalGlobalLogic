@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -16,6 +17,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     boolean existsByDepartmentId(Long departmentId);
 
     List<Employee> findByDepartmentId(Long departmentId);
+
+    long countByDepartmentId(Long departmentId);
+
+    List<Employee> findByHireDateAfterOrderByHireDateAsc(LocalDate date);
 
     List<Employee> findByActiveTrue();
 

@@ -224,4 +224,38 @@ class ProjectServiceImplTest {
 
         assertThatThrownBy(() -> service.getProjectsByEmployee(3L)).isInstanceOf(ResourceNotFoundException.class);
     }
+
+    private Project projectEnding(String name, LocalDate endDate) {
+        Project p = TestData.project(name);
+        p.setEndDate(endDate);
+        return p;
+    }
+
+    @Test
+    void getOngoingProjects_includesOpenEndedTodayAndFuture_excludesPast() {
+        LocalDate today = LocalDate.now();
+        when(projectRepository.findAll()).thenReturn(List.of(
+                projectEnding("OpenEnded", null),
+                projectEnding("EndsToday", today),
+                projectEnding("EndsNextMonth", today.plusMonths(1)),
+                projectEnding("EndedYesterday", today.minusDays(1))));
+
+        assertThat(service.getOngoingProjects()).extracting(ProjectResponse::name)
+                .containsExactlyInAnyOrder("OpenEnded", "EndsToday", "EndsNextMonth");
+    }
+
+    @Test
+    void getOngoingProjects_allFinished_returnsEmpty() {
+        when(projectRepository.findAll()).thenReturn(List.of(
+                projectEnding("Old", LocalDate.now().minusYears(1))));
+
+        assertThat(service.getOngoingProjects()).isEmpty();
+    }
+
+    @Test
+    void getOngoingProjects_noProjects_returnsEmpty() {
+        when(projectRepository.findAll()).thenReturn(List.of());
+
+        assertThat(service.getOngoingProjects()).isEmpty();
+    }
 }

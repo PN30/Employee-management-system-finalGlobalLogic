@@ -3,6 +3,7 @@ package com.ems.service;
 import com.ems.dto.EmployeeRequest;
 import com.ems.dto.EmployeeResponse;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface EmployeeService {
@@ -14,4 +15,7 @@ public interface EmployeeService {
     List<EmployeeResponse> searchByName(String name);
     List<EmployeeResponse> getByDepartment(Long departmentId);
     List<EmployeeResponse> getActive();
+    List<EmployeeResponse> getHiredAfter(LocalDate date);
+    EmployeeResponse deactivate(Long id);
+    long countByDepartment(Long departmentId);
 }
